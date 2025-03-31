@@ -1,0 +1,8 @@
+{
+    "name": "Addon de prueba nuevo",
+    "active": false,
+    "version": "1.0.0",
+    "description": "Pues eso",
+    "author": "Tu Nombre",
+    "folder": "prueba2"
+}
