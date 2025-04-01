@@ -1,6 +1,10 @@
 import os
 import json
 import importlib.util
+import streamlit as st  # Si necesitas usar st.warning; alternativamente, puedes manejar otro sistema de log
+import shutil
+import zipfile
+import io
 
 REGISTERED_ADDONS = {}
 
@@ -150,7 +154,7 @@ def load_addons_from_directory(addons_dir="addons"):
             src/
                 nombre_addon.py
             ui/
-                nombre_addon.html
+                (opcional: archivos estáticos o recursos)
             config.json
     """
     if not os.path.exists(addons_dir):
@@ -168,6 +172,134 @@ def load_addons_from_directory(addons_dir="addons"):
                 print(f"[OK] Addon cargado: {folder}")
             except Exception as e:
                 print(f"[ERROR] Falló la carga del addon '{folder}': {e}")
+
+def scan_addons(addons_dir="addons"):
+    temp_list = []
+    if os.path.exists(addons_dir):
+        for folder in os.listdir(addons_dir):
+            addon_path = os.path.join(addons_dir, folder)
+            if os.path.isdir(addon_path):
+                config_path = os.path.join(addons_dir, folder, "config.json")
+                if os.path.exists(config_path):
+                    try:
+                        with open(config_path, "r", encoding="utf-8") as f:
+                            config_data = json.load(f)
+                    except Exception as e:
+                        config_data = {"name": folder, "active": True, "version": "1.0.0", "description": "Sin descripción"}
+                else:
+                    config_data = {"name": folder, "active": True, "version": "1.0.0", "description": "Sin descripción"}
+                config_data["folder"] = folder
+                temp_list.append(config_data)
+    else:
+        st.warning("No existe la carpeta de addons.")
+    return temp_list
+
+def refresh_addons(addons_dir="addons"):
+    return scan_addons(addons_dir)
+
+def toggle_addons(addon_list, selected, addons_dir="addons"):
+    for addon in addon_list:
+        if addon["folder"] in selected:
+            addon["active"] = not addon.get("active", True)
+            config_path = os.path.join(addons_dir, addon["folder"], "config.json")
+            try:
+                with open(config_path, "w") as f:
+                    json.dump(addon, f, indent=4)
+            except Exception as e:
+                st.error(f"Error al guardar {addon['name']}: {e}")
+    st.success("Estado actualizado en los addons seleccionados.")
+    return refresh_addons(addons_dir)
+
+def uninstall_addons(addon_list, selected, addons_dir="addons"):
+    for addon in addon_list:
+        if addon["folder"] in selected:
+            try:
+                shutil.rmtree(os.path.join(addons_dir, addon["folder"]))
+                st.success(f"{addon['name']} desinstalado.")
+            except Exception as e:
+                st.error(f"Error al desinstalar {addon['name']}: {e}")
+    
+    return refresh_addons(addons_dir)
+
+def import_addon(uploaded_zip, temp_dir="temp"):
+    """
+    Importa un addon a partir de un archivo zip subido.
+    1. Descomprime el zip en una carpeta temporal.
+    2. Busca y lee el config.json del addon.
+    3. Registra el addon usando los datos de configuración.
+    
+    Args:
+        uploaded_zip: Archivo subido (Zip) desde st.file_uploader.
+        temp_dir (str): Carpeta temporal para extraer el addon.
+        
+    Returns:
+        dict: Datos de configuración del addon o None si falla.
+    """
+    # Crear carpeta temporal si no existe
+    os.makedirs(temp_dir, exist_ok=True)
+    
+    try:
+        # Leer el contenido del zip
+        with zipfile.ZipFile(io.BytesIO(uploaded_zip.read()), "r") as z:
+            # Extraer todo en la carpeta temporal
+            z.extractall(temp_dir)
+    except Exception as e:
+        st.error(f"Error al descomprimir el addon: {e}")
+        return None
+
+    # Buscar el archivo config.json en la carpeta extraída
+    config_path = None
+    for root, dirs, files in os.walk(temp_dir):
+        if "config.json" in files:
+            config_path = os.path.join(root, "config.json")
+            break
+
+    if not config_path:
+        st.error("No se encontró el archivo config.json en el addon.")
+        return None
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            config_data = json.load(f)
+    except Exception as e:
+        st.error(f"Error al leer config.json: {e}")
+        return None
+
+    # Usamos la clave "name" para determinar el nombre de la carpeta
+    addon_folder = config_data.get("name")
+    if not addon_folder:
+        addon_folder = os.path.splitext(uploaded_zip.name)[0]
+    else:
+        addon_folder = addon_folder.replace(" ", "_").lower()
+
+    destination = os.path.join("addons", addon_folder)
+    source = os.path.join(temp_dir, addon_folder)
+
+    try:
+        # Si la carpeta extraída existe, muévela
+        if os.path.isdir(source):
+            if os.path.exists(destination):
+                shutil.rmtree(destination)
+            shutil.move(source, destination)
+        else:
+            # Si no existe, se asume que los archivos se extrajeron directamente en temp
+            # Creamos el destino y movemos todos los archivos desde temp al destino
+            os.makedirs(destination, exist_ok=True)
+            for item in os.listdir(temp_dir):
+                s = os.path.join(temp_dir, item)
+                d = os.path.join(destination, item)
+                shutil.move(s, d)
+    except Exception as e:
+        st.error(f"Error al mover el addon a la carpeta definitiva: {e}")
+        return None
+
+    st.success(f"Addon '{config_data.get('name', '')}' importado correctamente.")
+
+    # Trigger: actualizar la lista de addons luego de la importación
+    updated_addons = refresh_addons()
+    
+    # Opcional: podrías devolver ambos, config_data y updated_addons, o simplemente config_data.
+    return config_data
 
 if __name__ == "__main__":
     # Ejemplo de uso interactivo

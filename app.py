@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os, json, shutil
+#from utils import refrescar
 
 # Configuración de la página
 st.set_page_config(
@@ -19,6 +20,12 @@ if "show_create_form" not in st.session_state:
 def set_module(mod):
     st.session_state.module = mod
 
+#def refrescar():
+    # Guarda el módulo activo en una variable de sesión
+#   st.session_state.last_module = st.session_state.module
+    # Cambia temporalmente a un módulo de refresco
+#   st.session_state.module = "Refresh"
+
 # ------------------
 # Sidebar personalizado con botones independientes
 # ------------------
@@ -30,6 +37,18 @@ if st.sidebar.button("Carga de Datos"):
     set_module("Carga de Datos")
 if st.sidebar.button("Módulo de Gráficos"):
     set_module("Módulo de Gráficos")
+from services.addons_manager import scan_addons
+addon_list = scan_addons()  # Lee todos los addons (cada uno con su config)
+
+if addon_list:
+    #st.sidebar.markdown("---")
+    #st.sidebar.markdown("## Addons")
+    for addon in addon_list:
+        nav = addon.get("nav_button", {})
+        if nav.get("show", False):
+            button_label = nav.get("label", addon["name"])
+            if st.sidebar.button(button_label):
+                st.session_state.module = addon["name"]
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("## Herramientas")
@@ -43,29 +62,9 @@ if st.sidebar.button("Gestor de Addons"):
 # ------------------
 addons_dir = "addons"
 
-def scan_addons():
-    temp_list = []
-    if os.path.exists(addons_dir):
-        for folder in os.listdir(addons_dir):
-            addon_path = os.path.join(addons_dir, folder)
-            if os.path.isdir(addon_path):
-                config_path = os.path.join(addons_dir, folder, "config.json")
-                if os.path.exists(config_path):
-                    try:
-                        with open(config_path, "r") as f:
-                            config_data = json.load(f)
-                    except:
-                        config_data = {"name": folder, "active": True, "version": "1.0.0", "description": "Sin descripción"}
-                else:
-                    config_data = {"name": folder, "active": True, "version": "1.0.0", "description": "Sin descripción"}
-                config_data["folder"] = folder
-                temp_list.append(config_data)
-    else:
-        st.warning("No existe la carpeta de addons.")
-    return temp_list
 
-def refresh_addons():
-    return scan_addons()
+
+
 
 # ------------------
 # Contenido principal según módulo seleccionado
@@ -134,17 +133,23 @@ elif st.session_state.module == "Gestor de Addons":
     st.markdown("## Dashboard para análisis de Trading")
     st.header("Gestor de Addons")
     
-    from services.addons_manager import create_addon  # Asegúrate de tener este módulo en services
-    
-    # Escanea la carpeta de addons
+    from services.addons_manager import create_addon, scan_addons, refresh_addons, toggle_addons, uninstall_addons, import_addon
+
+    # Escanea la carpeta de addons usando la función importada
     addon_list = scan_addons()
     
     # Sección para Importar o Crear addons siempre visibles
     st.markdown("### Añadir Nuevo Addon")
     col_import, col_create = st.columns(2)
     with col_import:
-        if st.button("Importar Addon"):
-            st.info("Funcionalidad de importación pendiente de implementación.")
+        # Reemplazamos el mensaje de funcionalidad pendiente por un file uploader para el zip del addon.
+        uploaded_zip = st.file_uploader("Selecciona el archivo .zip del addon", type=["zip"])
+        if uploaded_zip is not None:
+            result = import_addon(uploaded_zip)
+            if result is not None:
+                st.success("Addon importado correctamente.")
+                addon_list = refresh_addons()
+                
     with col_create:
         if st.button("Crear Nuevo Addon"):
             st.session_state.show_create_form = True
@@ -186,30 +191,29 @@ elif st.session_state.module == "Gestor de Addons":
         st.markdown("### Acciones en lote")
         colA, colB, colC, colD = st.columns(4)
         if colA.button("Activar/Desactivar"):
-            for addon in addon_list:
-                if addon["folder"] in selected:
-                    addon["active"] = not addon.get("active", True)
-                    config_path = os.path.join(addons_dir, addon["folder"], "config.json")
-                    try:
-                        with open(config_path, "w") as f:
-                            json.dump(addon, f, indent=4)
-                    except Exception as e:
-                        st.error(f"Error al guardar {addon['name']}: {e}")
-            st.success("Estado actualizado en los addons seleccionados.")
-            addon_list = refresh_addons()
+            addon_list = toggle_addons(addon_list, selected, addons_dir)
         if colB.button("Editar"):
             st.info("Funcionalidad de edición pendiente.")
         if colC.button("Exportar"):
             st.info("Funcionalidad de exportación pendiente.")
         if colD.button("Desinstalar"):
-            for addon in addon_list:
-                if addon["folder"] in selected:
-                    try:
-                        shutil.rmtree(os.path.join(addons_dir, addon["folder"]))
-                        st.success(f"{addon['name']} desinstalado.")
-                    except Exception as e:
-                        st.error(f"Error al desinstalar {addon['name']}: {e}")
-            addon_list = refresh_addons()
+            addon_list = uninstall_addons(addon_list, selected, addons_dir)
     else:
         st.info("No hay addons instalados.")
 
+elif st.session_state.module == "Refresh":
+    st.title("")
+    st.markdown("")
+    st.header("")
+    st.info("")
+    st.session_state.module = st.session_state.get("last_module", "Inicio")
+
+elif st.session_state.module in [addon["name"] for addon in addon_list]:
+    try:
+        import importlib
+        module_name = st.session_state.module  # por ejemplo, "hola_addon"
+        ui_module_path = f"addons.{module_name}.ui.ui"
+        ui_module = importlib.import_module(ui_module_path)
+        ui_module.render()  # Se renderiza la interfaz definida en ui.py del addon
+    except Exception as e:
+        st.error(f"Error al cargar la interfaz del addon: {e}")
