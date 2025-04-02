@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import os, json, shutil
-#from utils import refrescar
+from utils import refrescar  # Importamos la función reutilizable
+from config import current_config
 
 # Configuración de la página
 st.set_page_config(
@@ -11,124 +12,70 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Inicializar la variable de sesión para el módulo seleccionado
-if "module" not in st.session_state:
-    st.session_state.module = "Inicio"
-if "show_create_form" not in st.session_state:
-    st.session_state.show_create_form = False
+# Inicializar variables de sesión
+def initialize_session_state():
+    if "module" not in st.session_state:
+        st.session_state.module = "Inicio"
+    if "show_create_form" not in st.session_state:
+        st.session_state.show_create_form = False
 
+initialize_session_state()
+
+# Definir la ruta de la carpeta donde se almacenan los addons
+addons_dir = "addons"
+
+# Función para cambiar el módulo activo
 def set_module(mod):
     st.session_state.module = mod
 
-#def refrescar():
-    # Guarda el módulo activo en una variable de sesión
-#   st.session_state.last_module = st.session_state.module
-    # Cambia temporalmente a un módulo de refresco
-#   st.session_state.module = "Refresh"
-
-# ------------------
-# Sidebar personalizado con botones independientes
-# ------------------
-st.sidebar.markdown("## Navegación")
-# Botones principales de navegación
-if st.sidebar.button("Inicio"):
-    set_module("Inicio")
-if st.sidebar.button("Carga de Datos"):
-    set_module("Carga de Datos")
-if st.sidebar.button("Módulo de Gráficos"):
-    set_module("Módulo de Gráficos")
-from services.addons_manager import scan_addons
-addon_list = scan_addons()  # Lee todos los addons (cada uno con su config)
-
-if addon_list:
-    #st.sidebar.markdown("---")
-    #st.sidebar.markdown("## Addons")
-    for addon in addon_list:
-        nav = addon.get("nav_button", {})
-        if nav.get("show", False):
-            button_label = nav.get("label", addon["name"])
-            if st.sidebar.button(button_label):
-                st.session_state.module = addon["name"]
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("## Herramientas")
-if st.sidebar.button("Configuración"):
-    set_module("Configuración")
-if st.sidebar.button("Gestor de Addons"):
-    set_module("Gestor de Addons")
-
-# ------------------
-# Funciones para escanear y refrescar la lista de addons
-# ------------------
-addons_dir = "addons"
-
-
-
-
-
-# ------------------
-# Contenido principal según módulo seleccionado
-# ------------------
-if st.session_state.module == "Inicio":
-    st.title("DashBotTrade")
-    st.markdown("## Dashboard para análisis de Trading")
-    st.header("Bienvenido a DashBotTrade")
-    st.info("Esta es la pantalla principal. Los módulos se integrarán aquí conforme avance el desarrollo.")
-
-elif st.session_state.module == "Carga de Datos":
-    st.title("DashBotTrade")
-    st.markdown("## Dashboard para análisis de Trading")
-    st.header("Carga de Datos de Trading")
-    uploaded_file = st.file_uploader("Sube tu archivo CSV de trading", type="csv")
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.success("Datos cargados correctamente")
-        st.dataframe(df)
+# Función para renderizar el contenido principal según el módulo seleccionado
+def render_module(module_name):
+    if module_name == "Inicio":
+        st.title("DashBotTrade")
+        st.markdown("## Dashboard para análisis de Trading")
+        st.header("Bienvenido a DashBotTrade")
+        st.info("Esta es la pantalla principal. Los módulos se integrarán aquí conforme avance el desarrollo.")
+    elif module_name == "Carga de Datos":
+        st.title("DashBotTrade")
+        st.markdown("## Dashboard para análisis de Trading")
+        st.header("Carga de Datos de Trading")
+        uploaded_file = st.file_uploader("Sube tu archivo CSV de trading", type="csv")
+        if uploaded_file:
+            df = pd.read_csv(uploaded_file)
+            st.success("Datos cargados correctamente")
+            st.dataframe(df)
+        else:
+            st.info("Sube un archivo para comenzar")
+    elif module_name == "Módulo de Gráficos":
+        st.title("DashBotTrade")
+        st.markdown("## Dashboard para análisis de Trading")
+        st.header("Módulo de Gráficos")
+        st.info("Aquí se mostrarán los gráficos interactivos. (Módulo pendiente de implementación)")
+    elif module_name == "Configuración":
+        render_configuration()
+    elif module_name == "Gestor de Addons":
+        render_addons_manager()
+    elif module_name == "Refresh":
+        st.session_state.module = st.session_state.get("last_module", "Inicio")
     else:
-        st.info("Sube un archivo para comenzar")
+        render_addon_ui(module_name)
 
-elif st.session_state.module == "Módulo de Gráficos":
+# Función para renderizar la configuración de Alpaca
+def render_configuration():
     st.title("DashBotTrade")
-    st.markdown("## Dashboard para análisis de Trading")
-    st.header("Módulo de Gráficos")
-    st.info("Aquí se mostrarán los gráficos interactivos. (Módulo pendiente de implementación)")
-
-elif st.session_state.module == "Configuración":
-    st.title("DashBotTrade")
-    st.markdown("## Dashboard para análisis de Trading")
     st.header("Configuración")
     st.subheader("Configuración de la API de Alpaca Markets")
-    
-    # Archivo de configuración de Alpaca
-    config_file = "alpaca_config.json"
-    if os.path.exists(config_file):
-        with open(config_file, "r") as f:
-            alpaca_config = json.load(f)
-    else:
-        alpaca_config = {
-            "ALPACA_API_KEY": "",
-            "ALPACA_API_SECRET": "",
-            "ALPACA_BASE_URL": "https://paper-api.alpaca.markets"
-        }
-    
+
     with st.form("alpaca_config_form"):
-        api_key = st.text_input("API Key", value=alpaca_config.get("ALPACA_API_KEY", ""))
-        api_secret = st.text_input("API Secret", value=alpaca_config.get("ALPACA_API_SECRET", ""), type="password")
-        base_url = st.text_input("Base URL", value=alpaca_config.get("ALPACA_BASE_URL", "https://paper-api.alpaca.markets"))
+        api_key = st.text_input("API Key", value=current_config.ALPACA_API_KEY)
+        api_secret = st.text_input("API Secret", value=current_config.ALPACA_API_SECRET, type="password")
+        base_url = st.text_input("Base URL", value=current_config.ALPACA_BASE_URL)
         submitted = st.form_submit_button("Guardar configuración")
         if submitted:
-            alpaca_config = {
-                "ALPACA_API_KEY": api_key,
-                "ALPACA_API_SECRET": api_secret,
-                "ALPACA_BASE_URL": base_url
-            }
-            with open(config_file, "w") as f:
-                json.dump(alpaca_config, f, indent=4)
-            st.success("Configuración de Alpaca actualizada.")
-    st.write("La configuración actual es:")
-    st.json(alpaca_config)
+            st.success("Configuración actualizada.")
 
-elif st.session_state.module == "Gestor de Addons":
+# Función para renderizar el gestor de addons
+def render_addons_manager():
     st.title("DashBotTrade")
     st.markdown("## Dashboard para análisis de Trading")
     st.header("Gestor de Addons")
@@ -201,19 +148,52 @@ elif st.session_state.module == "Gestor de Addons":
     else:
         st.info("No hay addons instalados.")
 
-elif st.session_state.module == "Refresh":
-    st.title("")
-    st.markdown("")
-    st.header("")
-    st.info("")
-    st.session_state.module = st.session_state.get("last_module", "Inicio")
-
-elif st.session_state.module in [addon["name"] for addon in addon_list]:
+# Función para renderizar la interfaz de un addon
+def render_addon_ui(module_name):
     try:
         import importlib
-        module_name = st.session_state.module  # por ejemplo, "hola_addon"
         ui_module_path = f"addons.{module_name}.ui.ui"
         ui_module = importlib.import_module(ui_module_path)
-        ui_module.render()  # Se renderiza la interfaz definida en ui.py del addon
+        if not hasattr(ui_module, "render"):
+            st.error(f"El módulo '{module_name}' no tiene una función 'render'.")
+            return
+        ui_module.render()
+    except ModuleNotFoundError:
+        st.error(f"No se pudo encontrar el módulo para el addon '{module_name}'. Asegúrate de que esté instalado correctamente.")
+    except ImportError as e:
+        st.error(f"Error al importar el módulo del addon '{module_name}': {e}")
     except Exception as e:
-        st.error(f"Error al cargar la interfaz del addon: {e}")
+        st.error(f"Error inesperado al cargar la interfaz del addon '{module_name}': {e}")
+        # Opcional: Registrar el error en un archivo de log
+        with open("error.log", "a") as log_file:
+            log_file.write(f"Error en addon '{module_name}': {e}\n")
+
+# Sidebar personalizado con botones independientes
+st.sidebar.markdown("## Navegación")
+if st.sidebar.button("Inicio"):
+    set_module("Inicio")
+if st.sidebar.button("Carga de Datos"):
+    set_module("Carga de Datos")
+if st.sidebar.button("Módulo de Gráficos"):
+    set_module("Módulo de Gráficos")
+
+from services.addons_manager import scan_addons
+addon_list = scan_addons()  # Lee todos los addons (cada uno con su config)
+
+if addon_list:
+    for addon in addon_list:
+        nav = addon.get("nav_button", {})
+        if nav.get("show", False):
+            button_label = nav.get("label", addon["name"])
+            if st.sidebar.button(button_label):
+                st.session_state.module = addon["name"]
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("## Herramientas")
+if st.sidebar.button("Configuración"):
+    set_module("Configuración")
+if st.sidebar.button("Gestor de Addons"):
+    set_module("Gestor de Addons")
+
+# Renderizar el módulo seleccionado
+render_module(st.session_state.module)

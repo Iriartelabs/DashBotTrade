@@ -1,0 +1,12 @@
+# Código inactivo o comentado movido desde otros archivos para referencia futura.
+
+# Código comentado de app.py:
+# st.sidebar.markdown("---")
+# st.sidebar.markdown("## Addons")
+
+# Código comentado de refrescar (si no se utiliza en utils.py):
+# def refrescar():
+#     Guarda el módulo activo en una variable de sesión
+#     st.session_state.last_module = st.session_state.module
+#     Cambia temporalmente a un módulo de refresco
+#     st.session_state.module = "Refresh"

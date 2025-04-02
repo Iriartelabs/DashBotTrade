@@ -1,3 +1,6 @@
 venv/
 venv_trabajo/
 .streamlit/secrets.txt
+__pycache__/
+*.pyc
+alpaca_config.json

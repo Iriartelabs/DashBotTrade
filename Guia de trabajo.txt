@@ -1,0 +1,11 @@
+Hecho. Seguridad: El archivo alpaca_config.json contiene claves API sensibles en texto plano. Esto es un riesgo de seguridad. Se recomienda usar variables de entorno o el sistema de secretos de Streamlit para manejar estas claves.
+
+Hecho. Código Repetido: Algunas funciones, como la inicialización de estados de sesión o la lógica de navegación, podrían refactorizarse para evitar duplicación y mejorar la mantenibilidad.
+
+Hecho. Manejo de Errores: El manejo de errores en la carga de addons podría ser más robusto, con mensajes claros para el usuario en caso de fallos.
+
+Hecho. Comentarios y Código Inactivo: Hay secciones de código comentadas (como refrescar en app.py) que podrían eliminarse si no se van a usar, o reactivarse si son necesarias.
+
+Hecho. Dependencias: Asegúrate de que todas las dependencias necesarias estén en requirements.txt y que estén actualizadas.
+
+Hecho. Optimización de Configuración: La configuración de Alpaca podría centralizarse para evitar redundancia y facilitar su actualización.
