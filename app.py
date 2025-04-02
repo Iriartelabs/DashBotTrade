@@ -60,19 +60,48 @@ def render_module(module_name):
     else:
         render_addon_ui(module_name)
 
+from addons.alertsbot.src.symbols_manager import SymbolsManager  # Importamos SymbolsManager para probar la conexión
+
 # Función para renderizar la configuración de Alpaca
 def render_configuration():
     st.title("DashBotTrade")
     st.header("Configuración")
     st.subheader("Configuración de la API de Alpaca Markets")
 
+    # Inicializar SymbolsManager para probar la conexión
+    symbols_manager = SymbolsManager()
+
+    # Probar conexión automáticamente al cargar la configuración
+    connection_status = symbols_manager.test_connection()
+    if connection_status["status"] == "success":
+        st.success(f"Conexión exitosa: {connection_status['message']}")
+    else:
+        st.error(f"Error de conexión: {connection_status['message']}")
+
+    # Formulario para configurar las claves de la API
     with st.form("alpaca_config_form"):
         api_key = st.text_input("API Key", value=current_config.ALPACA_API_KEY)
         api_secret = st.text_input("API Secret", value=current_config.ALPACA_API_SECRET, type="password")
         base_url = st.text_input("Base URL", value=current_config.ALPACA_BASE_URL)
         submitted = st.form_submit_button("Guardar configuración")
         if submitted:
-            st.success("Configuración actualizada.")
+            # Guardar las claves en el archivo de configuración o variables de entorno
+            with open("alpaca_config.json", "w") as f:
+                json.dump({
+                    "ALPACA_API_KEY": api_key,
+                    "ALPACA_API_SECRET": api_secret,
+                    "ALPACA_BASE_URL": base_url
+                }, f, indent=4)
+            st.success("Configuración actualizada. Por favor, prueba la conexión nuevamente.")
+
+    # Botón para probar la conexión manualmente
+    if st.button("Probar conexión con Alpaca"):
+        connection_status = symbols_manager.test_connection()
+        if connection_status["status"] == "success":
+            st.success(f"Conexión exitosa: {connection_status['message']}")
+            st.json(connection_status["example_assets"])
+        else:
+            st.error(f"Error de conexión: {connection_status['message']}")
 
 # Función para renderizar el gestor de addons
 def render_addons_manager():
@@ -152,7 +181,8 @@ def render_addons_manager():
 def render_addon_ui(module_name):
     try:
         import importlib
-        ui_module_path = f"addons.{module_name}.ui.ui"
+        # Usar el nombre de la carpeta (module_name) para importar el módulo
+        ui_module_path = f"addons.{module_name}.ui.alertsbot"
         ui_module = importlib.import_module(ui_module_path)
         if not hasattr(ui_module, "render"):
             st.error(f"El módulo '{module_name}' no tiene una función 'render'.")
@@ -178,6 +208,8 @@ if st.sidebar.button("Módulo de Gráficos"):
     set_module("Módulo de Gráficos")
 
 from services.addons_manager import scan_addons
+
+# Escanear addons y registrar el addon de Claude
 addon_list = scan_addons()  # Lee todos los addons (cada uno con su config)
 
 if addon_list:

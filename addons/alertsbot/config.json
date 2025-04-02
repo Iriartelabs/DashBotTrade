@@ -1,0 +1,12 @@
+{
+    "name": "alertsbot",
+    "active": true,
+    "version": "1.0.0",
+    "description": "Sistema configurable de alertas para múltiples activos e indicadores técnicos",
+    "author": "DashBotTrade Team",
+    "folder": "alertsbot",
+    "nav_button": {
+        "show": true,
+        "label": "🔔 Bot de Alertas"
+    }
+}
