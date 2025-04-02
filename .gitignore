@@ -4,3 +4,5 @@ venv_trabajo/
 __pycache__/
 *.pyc
 alpaca_config.json
+addons/alertsbot/
+alpaca_integration_extended.py
