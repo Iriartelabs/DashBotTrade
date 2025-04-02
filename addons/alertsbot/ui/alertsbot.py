@@ -1,6 +1,11 @@
 import streamlit as st
 from addons.alertsbot.src.symbols_manager import SymbolsManager
 from utils import load_alpaca_assets
+from addons.alertsbot.src.symbols_manager import SymbolsManager
+from services.alpaca_integration import AlpacaIntegration
+alpaca = AlpacaIntegration()
+symbols_manager = SymbolsManager()
+alpaca = AlpacaIntegration()
 
 def render():
     """
@@ -9,19 +14,26 @@ def render():
     st.title("🔔 Bot de Alertas")
     st.markdown("## Gestión de Alertas para DashBotTrade")
 
-    # Inicializar SymbolsManager
-    symbols_manager = SymbolsManager()
+    # Obtener activos desde la API de Alpaca
+    assets = alpaca.get_assets()
 
-    # Cargar activos desde el archivo
-    assets_file = "c:/Users/Jose/alpaca_assets.txt"
-    assets = load_alpaca_assets(assets_file)
+    # Verificar si la respuesta es válida
+    if isinstance(assets, list):  # Verifica que la respuesta sea una lista
+        # Extraer categorías únicas (class) de los activos
+        categories = list(set(asset["class"] for asset in assets))
+        categories.sort()  # Ordenar alfabéticamente
 
-    # Mostrar activos en la interfaz
-    if assets:
-        st.markdown("### Activos disponibles")
-        st.dataframe(assets[:10])  # Mostrar los primeros 10 activos como ejemplo
+        # Mostrar combobox con las categorías
+        selected_category = st.selectbox("Categoría de activo", categories)
+
+        # Filtrar activos por la categoría seleccionada
+        filtered_assets = [asset for asset in assets if asset["class"] == selected_category]
+
+        # Mostrar los activos filtrados
+        st.markdown(f"### Activos en la categoría: {selected_category}")
+        st.dataframe(filtered_assets[:10])  # Mostrar los primeros 10 activos como ejemplo
     else:
-        st.error("No se pudieron cargar los activos desde el archivo.")
+        st.error(assets.get("error", "No se pudieron cargar los activos desde Alpaca."))
 
     # Dividir la interfaz en pestañas
     tab1, tab2, tab3 = st.tabs(["Configurar Alertas", "Alertas Activas", "Configuración"])
@@ -42,12 +54,18 @@ def render():
         # Obtener lista de activos desde Alpaca
         available_symbols = symbols_manager.get_symbols_list(asset_class=selected_asset_class)
 
+        # Mostrar selectbox o mensaje de advertencia
+        if available_symbols:
+            selected_symbol = st.selectbox("Activo", available_symbols)
+        else:
+            st.warning("No hay activos disponibles para la categoría seleccionada.")
+            selected_symbol = st.selectbox("Activo", available_symbols)
+
         with st.form("configurar_alerta"):
             col1, col2 = st.columns(2)
 
             with col1:
                 st.text_input("Nombre de la alerta", placeholder="Ejemplo: Alerta RSI")
-                selected_symbol = st.selectbox("Activo", available_symbols)
                 st.selectbox("Indicador técnico", ["RSI", "MACD", "Media Móvil", "Bollinger Bands"])
 
             with col2:
@@ -81,7 +99,7 @@ def render():
         # Probar conexión con Alpaca
         st.subheader("Probar conexión con Alpaca")
         if st.button("Probar conexión"):
-            result = symbols_manager.test_connection()
+            result = alpaca.test_connection()
             if result["status"] == "success":
                 st.success(result["message"])
                 st.json(result["example_assets"])

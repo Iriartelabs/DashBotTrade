@@ -68,11 +68,10 @@ def render_configuration():
     st.header("Configuración")
     st.subheader("Configuración de la API de Alpaca Markets")
 
-    # Inicializar SymbolsManager para probar la conexión
-    symbols_manager = SymbolsManager()
+    from services.alpaca_integration import AlpacaIntegration
 
-    # Probar conexión automáticamente al cargar la configuración
-    connection_status = symbols_manager.test_connection()
+    alpaca = AlpacaIntegration()
+    connection_status = alpaca.test_connection()
     if connection_status["status"] == "success":
         st.success(f"Conexión exitosa: {connection_status['message']}")
     else:
@@ -96,7 +95,7 @@ def render_configuration():
 
     # Botón para probar la conexión manualmente
     if st.button("Probar conexión con Alpaca"):
-        connection_status = symbols_manager.test_connection()
+        connection_status = alpaca.test_connection()
         if connection_status["status"] == "success":
             st.success(f"Conexión exitosa: {connection_status['message']}")
             st.json(connection_status["example_assets"])
