@@ -16,3 +16,21 @@ Error en addon 'alertsbot': `st.form_submit_button()` must be used inside an `st
 For more information, refer to the
 [documentation for forms](https://docs.streamlit.io/develop/api-reference/execution-flow/st.form).
 
+Error en addon 'alertsbot': RadioMixin.radio() missing 1 required positional argument: 'options'
+Error en addon 'alertsbot': expected an indented block after 'with' statement on line 52 (alertsbot.py, line 55)
+Error en addon 'alertsbot': unindent does not match any outer indentation level (alertsbot.py, line 69)
+Error en addon 'alertsbot': There are multiple `selectbox` elements with the same auto-generated ID. When this element is created, it is assigned an internal ID based on the element type and provided parameters. Multiple elements with the same type and parameters will cause this error.
+
+To fix this error, please pass a unique `key` argument to the `selectbox` element.
+Error en addon 'alertsbot': name 'alert_types_by_category' is not defined
+Error en addon 'alertsbot': There are multiple `selectbox` elements with the same auto-generated ID. When this element is created, it is assigned an internal ID based on the element type and provided parameters. Multiple elements with the same type and parameters will cause this error.
+
+To fix this error, please pass a unique `key` argument to the `selectbox` element.
+Error en addon 'alertsbot': There are multiple `selectbox` elements with the same auto-generated ID. When this element is created, it is assigned an internal ID based on the element type and provided parameters. Multiple elements with the same type and parameters will cause this error.
+
+To fix this error, please pass a unique `key` argument to the `selectbox` element.
+Error en addon 'alertsbot': 'charmap' codec can't decode byte 0x8d in position 1132: character maps to <undefined>
+Error en addon 'alertsbot': 'charmap' codec can't decode byte 0x8d in position 1132: character maps to <undefined>
+Error en addon 'alertsbot': 'charmap' codec can't decode byte 0x8d in position 1132: character maps to <undefined>
+Error en addon 'alertsbot': 'charmap' codec can't decode byte 0x8d in position 959: character maps to <undefined>
+Error en addon 'alertsbot': 'charmap' codec can't decode byte 0x8d in position 959: character maps to <undefined>

@@ -1,0 +1,44 @@
+{
+  "Precio": [
+    "Cruce de Precio", 
+    "Alerta de Precio Fijo",
+    "Ruptura de Soporte/Resistencia",
+    "Máximos/Mínimos del Día",
+    "Cambio Porcentual desde Apertura"
+  ],
+  "Volumen": [
+    "Cruce de Volumen", 
+    "Volumen Anómalo",
+    "Picos Repentinos",
+    "Acumulación/Distribución"
+  ],
+  "Indicadores Técnicos": [
+    "Cruce de RSI", 
+    "Cruce de MACD", 
+    "Cruce de Medias Móviles",
+    "Estrechamiento de Bollinger",
+    "Patrones de Velas",
+    "Divergencias"
+  ],
+  "Momentum": [
+    "Momentum Positivo", 
+    "Momentum Negativo",
+    "Cambio de Tendencia Intradiaria",
+    "Movimiento Direccional Fuerte"
+  ],
+  "Riesgo": [
+    "Alerta de Riesgo Alto", 
+    "Alerta de Riesgo Bajo",
+    "Proximidad a Stop Loss",
+    "Proximidad a Take Profit",
+    "Drawdown Diario Crítico",
+    "Exposición Sectorial Excesiva"
+  ],
+  "Mercado": [
+    "Correlación Positiva", 
+    "Correlación Negativa",
+    "Cambio de Dirección en Índices",
+    "Próximos Anuncios Económicos",
+    "Noticias Relevantes"
+  ]
+}

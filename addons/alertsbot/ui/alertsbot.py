@@ -1,6 +1,12 @@
 import streamlit as st
 from addons.alertsbot.src.symbols_manager import SymbolsManager
 from services.alpaca_integration import AlpacaIntegration
+import importlib
+import json
+
+# Cargar las categorías y tipos de alertas desde el archivo JSON
+with open("c:/xampp/htdocs/DashBotTrade/addons/alertsbot/src/alert_types.json", "r", encoding="utf-8") as f:
+    alert_types_by_category = json.load(f)
 
 # Instancias necesarias
 alpaca = AlpacaIntegration()
@@ -48,31 +54,27 @@ def render():
     # Tab 1: Crear Alerta
     with tab1:
         st.header("Crear Alerta")
-        # Mostrar selectbox o mensaje de advertencia
-        if available_symbols:
+    if available_symbols:
+        
+        # Selectbox para seleccionar la categoría y el tipo de alerta
+        selected_category = st.selectbox("Categoría de alerta:", list(alert_types_by_category.keys()))
+        selected_alert_type = st.selectbox("Tipo de alerta:", alert_types_by_category[selected_category])
+
+        # Cargar dinámicamente el archivo correspondiente al tipo de alerta
+        alert_module_name = selected_alert_type.lower().replace(" ", "_") + "_alert"
+        try:
+            # Intentar importar el módulo dinámicamente
+            alert_module = importlib.import_module(f"addons.alertsbot.alerts.{alert_module_name}")
             
-
-            # Formulario para configurar una nueva alerta
-            with st.form("configurar_alerta"):
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    alert_name = st.text_input("Nombre de la alerta", placeholder="Ejemplo: Alerta RSI")
-                    selected_symbol = st.selectbox("Activo", available_symbols)
-                    indicator = st.selectbox("Indicador técnico", ["RSI", "MACD", "Media Móvil", "Bollinger Bands"])
-
-
-                with col2:
-                    parameter = st.slider("Parámetro del indicador", min_value=1, max_value=100, value=14)
-                    condition = st.selectbox("Condición", ["Mayor que", "Menor que", "Cruce por arriba", "Cruce por abajo"])
-                    reference_value = st.number_input("Valor de referencia", value=50.0)
-
-                # Botón para enviar el formulario
-                submitted = st.form_submit_button("Crear Alerta")
-                if submitted:
-                    st.success(f"Alerta '{alert_name}' creada correctamente para el activo {selected_symbol} con el indicador {indicator}.")
-        else:
-            st.warning("No hay activos disponibles para la categoría seleccionada.")
+            # Verificar si el módulo tiene la función render_form
+            if hasattr(alert_module, "render_form"):
+                alert_module.render_form(available_symbols)  # Llamar a la función principal del módulo
+            else:
+                st.error(f"El módulo '{alert_module_name}' no tiene una función 'render_form'.")
+        except ModuleNotFoundError:
+            st.error(f"No se encontró el módulo para el tipo de alerta: {selected_alert_type}")
+        except Exception as e:
+            st.error(f"Error inesperado al cargar el módulo '{alert_module_name}': {e}")
     
     # Tab 2: Alertas Activas
     with tab2:
