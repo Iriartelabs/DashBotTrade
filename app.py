@@ -29,28 +29,19 @@ def set_module(mod):
     st.session_state.module = mod
 
 # Función para renderizar el contenido principal según el módulo seleccionado
+from modules.data_loader import render_data_loader
+from modules.charts_module import render_charts_module
+
 def render_module(module_name):
     if module_name == "Inicio":
         st.title("DashBotTrade")
         st.markdown("## Dashboard para análisis de Trading")
         st.header("Bienvenido a DashBotTrade")
-        st.info("Esta es la pantalla principal. Los módulos se integrarán aquí conforme avance el desarrollo.")
+        st.info("Esta es la pantalla principal.")
     elif module_name == "Carga de Datos":
-        st.title("DashBotTrade")
-        st.markdown("## Dashboard para análisis de Trading")
-        st.header("Carga de Datos de Trading")
-        uploaded_file = st.file_uploader("Sube tu archivo CSV de trading", type="csv")
-        if uploaded_file:
-            df = pd.read_csv(uploaded_file)
-            st.success("Datos cargados correctamente")
-            st.dataframe(df)
-        else:
-            st.info("Sube un archivo para comenzar")
+        render_data_loader()
     elif module_name == "Módulo de Gráficos":
-        st.title("DashBotTrade")
-        st.markdown("## Dashboard para análisis de Trading")
-        st.header("Módulo de Gráficos")
-        st.info("Aquí se mostrarán los gráficos interactivos. (Módulo pendiente de implementación)")
+        render_charts_module()
     elif module_name == "Configuración":
         render_configuration()
     elif module_name == "Gestor de Addons":

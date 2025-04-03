@@ -4,3 +4,15 @@ Error en addon 'alertsbot': name 'symbols_manager' is not defined
 Error en addon 'alertsbot': name 'symbols_manager' is not defined
 Error en addon 'alertsbot': name 'symbols_manager' is not defined
 Error en addon 'alertsbot': name 'symbols_manager' is not defined
+Error en addon 'alertsbot': cannot access local variable 'selected_symbol' where it is not associated with a value
+Error en addon 'alertsbot': cannot access local variable 'selected_symbol' where it is not associated with a value
+Error en addon 'alertsbot': cannot access local variable 'selected_symbol' where it is not associated with a value
+Error en addon 'alertsbot': cannot access local variable 'selected_symbol' where it is not associated with a value
+Error en addon 'alertsbot': not enough values to unpack (expected 3, got 2)
+Error en addon 'alertsbot': not enough values to unpack (expected 3, got 2)
+Error en addon 'alertsbot': not enough values to unpack (expected 3, got 2)
+Error en addon 'alertsbot': `st.form_submit_button()` must be used inside an `st.form()`.
+
+For more information, refer to the
+[documentation for forms](https://docs.streamlit.io/develop/api-reference/execution-flow/st.form).
+
