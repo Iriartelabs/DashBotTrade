@@ -1,0 +1,532 @@
+Parámetros para Categorías y Tipos de Alertas en DemonDBT
+Este documento detalla los parámetros necesarios para cada categoría y tipo de alerta basándose en la estructura de base de datos definida para DemonDBT.
+Estructura Base de Datos
+La tabla principal alerts contiene:
+
+Campos comunes como columnas directas (symbol, timeframe, direction, threshold_price, threshold_percent, threshold_stddev)
+Parámetros adicionales específicos en formato JSON en el campo parameters
+
+Categoría: Precio
+1. Cruce de Precio
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal (1Min, 5Min, 1Hour, etc.)
+direction: "above" o "below"
+threshold_price: Precio de referencia para el cruce
+
+
+Parámetros JSON:
+
+confirmation_bars: Número de barras para confirmar el cruce (opcional)
+
+
+
+2. Alerta de Precio Fijo
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "above", "below" o "equal"
+threshold_price: Precio objetivo
+
+
+Parámetros JSON:
+
+tolerance_percent: Tolerancia en porcentaje (para "equal")
+
+
+
+3. Ruptura de Soporte/Resistencia
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+threshold_price: Nivel de soporte/resistencia
+
+
+Parámetros JSON:
+
+type: "support" o "resistance"
+confirmation_bars: Número de barras para confirmar ruptura
+
+
+
+4. Máximos/Mínimos del Día
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+threshold_percent: Porcentaje de proximidad para activar
+
+
+Parámetros JSON:
+
+days_lookback: Días hacia atrás para calcular máximos/mínimos
+type: "high" o "low" (máximo o mínimo)
+
+
+
+5. Cambio Porcentual desde Apertura
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "up" o "down"
+threshold_percent: Porcentaje de cambio
+
+
+Parámetros JSON:
+
+reference_type: "open" (por defecto), "previous_close", "custom"
+reference_price: Precio de referencia (si reference_type es "custom")
+
+
+
+Categoría: Volumen
+1. Cruce de Volumen
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "above" o "below"
+
+
+Parámetros JSON:
+
+reference_volume: Volumen de referencia
+
+
+
+2. Volumen Anómalo
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+threshold_stddev: Múltiplo de desviación estándar (ej: 2 para 2σ)
+
+
+Parámetros JSON:
+
+lookback_periods: Períodos hacia atrás para calcular promedio
+
+
+
+3. Picos Repentinos
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+threshold_percent: Porcentaje de aumento repentino
+
+
+Parámetros JSON:
+
+time_window: Ventana de tiempo en minutos
+
+
+
+4. Acumulación/Distribución
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "accumulation" o "distribution"
+
+
+Parámetros JSON:
+
+ad_threshold: Umbral del indicador A/D
+periods: Períodos para cálculo
+
+
+
+Categoría: Indicadores Técnicos
+1. Cruce de RSI
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "above" o "below"
+threshold_price: Nivel de umbral (ej: 30, 70)
+
+
+Parámetros JSON:
+
+period: Período del RSI (típicamente 14)
+
+
+
+2. Cruce de MACD
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "above" o "below"
+
+
+Parámetros JSON:
+
+fast_period: Período rápido (típicamente 12)
+slow_period: Período lento (típicamente 26)
+signal_period: Período de señal (típicamente 9)
+cross_type: "signal" o "zero" (cruce con línea de señal o con cero)
+
+
+
+3. Cruce de Medias Móviles
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "above" o "below"
+
+
+Parámetros JSON:
+
+short_period: Período corto
+long_period: Período largo
+ma_type: "simple", "exponential", "weighted" (tipo de media móvil)
+
+
+
+4. Estrechamiento de Bollinger
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+threshold_percent: Umbral de estrechamiento en porcentaje
+
+
+Parámetros JSON:
+
+period: Período para cálculo (típicamente 20)
+stddev: Desviación estándar (típicamente 2)
+
+
+
+5. Patrones de Velas
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+
+
+Parámetros JSON:
+
+pattern_type: Tipo de patrón ("doji", "hammer", "engulfing", etc.)
+confirmation: Boolean para requerir confirmación
+
+
+
+6. Divergencias
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "bullish" o "bearish"
+
+
+Parámetros JSON:
+
+indicator: Indicador para divergencia ("rsi", "macd", etc.)
+divergence_type: "regular" o "hidden"
+lookback_bars: Barras hacia atrás para buscar divergencia
+
+
+
+Categoría: Momentum
+1. Momentum Positivo
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+threshold_price: Umbral para considerar momentum positivo
+
+
+Parámetros JSON:
+
+period: Período para cálculo de momentum
+
+
+
+2. Momentum Negativo
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+threshold_price: Umbral para considerar momentum negativo
+
+
+Parámetros JSON:
+
+period: Período para cálculo de momentum
+
+
+
+3. Cambio de Tendencia Intradiaria
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal (normalmente menor a 1Día)
+
+
+Parámetros JSON:
+
+lookback_bars: Barras hacia atrás para determinar tendencia
+confirmation_bars: Barras para confirmar cambio
+
+
+
+4. Movimiento Direccional Fuerte
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+timeframe: Marco temporal
+direction: "positive" o "negative"
+threshold_price: Umbral para considerar movimiento fuerte
+
+
+Parámetros JSON:
+
+di_period: Período para índice direccional (típicamente 14)
+
+
+
+Categoría: Riesgo
+1. Alerta de Riesgo Alto
+
+Campos directos:
+
+threshold_percent: Umbral de riesgo (%)
+
+
+Parámetros JSON:
+
+portfolio_id: ID del portafolio (si aplica)
+metrics: Array de métricas a considerar (volatilidad, beta, etc.)
+
+
+
+2. Alerta de Riesgo Bajo
+
+Campos directos:
+
+threshold_percent: Umbral de riesgo (%)
+
+
+Parámetros JSON:
+
+portfolio_id: ID del portafolio (si aplica)
+metrics: Array de métricas a considerar
+
+
+
+3. Proximidad a Stop Loss
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+threshold_price: Precio de stop loss
+threshold_percent: Porcentaje de proximidad para activar
+
+
+Parámetros JSON:
+
+position_type: "long" o "short"
+
+
+
+4. Proximidad a Take Profit
+
+Campos directos:
+
+symbol: Símbolo del instrumento
+threshold_price: Precio de take profit
+threshold_percent: Porcentaje de proximidad para activar
+
+
+Parámetros JSON:
+
+position_type: "long" o "short"
+
+
+
+5. Drawdown Diario Crítico
+
+Campos directos:
+
+threshold_percent: Umbral de drawdown en porcentaje
+
+
+Parámetros JSON:
+
+portfolio_id: ID del portafolio (si aplica)
+reference_value: Valor de referencia para calcular drawdown
+
+
+
+6. Exposición Sectorial Excesiva
+
+Campos directos:
+
+threshold_percent: Umbral de exposición en porcentaje
+
+
+Parámetros JSON:
+
+sector: Sector a monitorear
+portfolio_id: ID del portafolio (si aplica)
+
+
+
+Categoría: Mercado
+1. Correlación Positiva
+
+Campos directos:
+
+timeframe: Marco temporal
+threshold_price: Umbral de correlación (0-1)
+
+
+Parámetros JSON:
+
+symbol1: Primer símbolo
+symbol2: Segundo símbolo
+period: Período para cálculo de correlación
+
+
+
+2. Correlación Negativa
+
+Campos directos:
+
+timeframe: Marco temporal
+threshold_price: Umbral de correlación (-1-0)
+
+
+Parámetros JSON:
+
+symbol1: Primer símbolo
+symbol2: Segundo símbolo
+period: Período para cálculo de correlación
+
+
+
+3. Cambio de Dirección en Índices
+
+Campos directos:
+
+symbol: Símbolo del índice
+timeframe: Marco temporal
+threshold_percent: Porcentaje de cambio para considerar cambio de dirección
+
+
+Parámetros JSON:
+
+lookback_bars: Barras hacia atrás para determinar dirección
+
+
+
+4. Próximos Anuncios Económicos
+
+Campos directos:
+
+timeframe: Marco temporal (para la comprobación periódica)
+
+
+Parámetros JSON:
+
+event_type: Tipo de evento económico
+symbols_affected: Array de símbolos afectados
+time_before: Tiempo antes del anuncio para alertar (minutos)
+importance: Importancia del anuncio ("high", "medium", "low")
+
+
+
+5. Noticias Relevantes
+
+Campos directos:
+
+timeframe: Marco temporal (para la comprobación periódica)
+
+
+Parámetros JSON:
+
+keywords: Palabras clave para buscar en noticias
+symbols: Símbolos relacionados con las noticias
+importance: Importancia de la noticia ("high", "medium", "low")
+sources: Fuentes de noticias a considerar
+
+
+
+Notas Importantes
+
+Los campos directos (symbol, timeframe, direction, threshold_*) facilitan las consultas y filtros en la base de datos.
+Los parámetros específicos se almacenan en el campo JSON parameters, lo que permite flexibilidad para tipos de alertas diferentes o personalizadas.
+Al generar las consultas SQL desde DashBotTrade, se deben incluir:
+
+Los campos comunes como columnas directas
+Los parámetros adicionales como un objeto JSON en la columna parameters
+
+
+Para alertas que requieren múltiples símbolos (como correlaciones), el símbolo principal puede ir en la columna symbol y los secundarios en el JSON.
+Los tipos de timeframe válidos son: "1Min", "5Min", "15Min", "30Min", "1Hour", "4Hour", "1Day", "1Week"
+Los threshold pueden ser de diferentes tipos según la alerta:
+
+threshold_price: Valores absolutos (precios, niveles, valores de indicadores)
+threshold_percent: Porcentajes (cambios porcentuales, umbrales relativos)
+threshold_stddev: Desviaciones estándar (para alertas estadísticas)
+
+
+
+CREATE TABLE IF NOT EXISTS alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT,                      -- Categoría de la alerta
+    alert_type TEXT NOT NULL,           -- Tipo específico de alerta
+    symbol TEXT NOT NULL,               -- Símbolo del instrumento
+    
+    -- Campos comunes extraídos del JSON para facilitar consultas
+    timeframe TEXT DEFAULT '1Min',      -- Marco temporal como combobox
+    direction TEXT,                     -- Dirección como combobox
+    threshold_price REAL,               -- Umbral de precio (valor absoluto)
+    threshold_percent REAL,             -- Umbral porcentual
+    threshold_stddev REAL,              -- Umbral en desviaciones estándar
+    
+    -- Resto de parámetros específicos en JSON
+    parameters TEXT,                    -- Parámetros adicionales específicos
+    
+    -- Otros campos...
+    telegram_chat_id TEXT,
+    description TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    triggered INTEGER NOT NULL DEFAULT 0,
+    repeat_after INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL,
+    triggered_at TEXT,
+    last_checked TEXT,
+    last_triggered TEXT,
+    trigger_message TEXT,
+    original_sql TEXT,
+    custom_message TEXT,
+    notes TEXT
+);
